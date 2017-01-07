@@ -236,6 +236,9 @@ void D_SpriteScanLeftEdge (void)
 
 			for (v=itop ; v<ibottom ; v++)
 			{
+				if (pspan - sprite_spans >= MAXHEIGHT) {
+				  break;
+				}
 				pspan->u = u >> 16;
 				pspan->v = v;
 				u += u_step;
@@ -316,6 +319,9 @@ void D_SpriteScanRightEdge (void)
 
 			for (v=itop ; v<ibottom ; v++)
 			{
+				if (pspan - sprite_spans >= MAXHEIGHT) {
+				  break;
+				}			  
 				pspan->count = (u >> 16) - pspan->u;
 				u += u_step;
 				pspan++;

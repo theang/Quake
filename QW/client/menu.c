@@ -845,6 +845,7 @@ void M_Menu_Video_f (void)
 
 void M_Video_Draw (void)
 {
+  if (vid_menudrawfn != 0)
 	(*vid_menudrawfn) ();
 }
 

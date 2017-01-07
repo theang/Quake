@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _BSD
 
 typedef unsigned short PIXEL;
+typedef unsigned int   PIXEL32;
 
 #include <ctype.h>
 #include <sys/time.h>
@@ -70,6 +71,7 @@ typedef struct
 
 viddef_t vid; // global video state
 unsigned short d_8to16table[256];
+unsigned int   d_8to24table[256];
 
 int		num_shades=32;
 
@@ -98,7 +100,7 @@ int current_framebuffer;
 static XImage			*x_framebuffer[2] = { 0, 0 };
 static XShmSegmentInfo	x_shminfo[2];
 
-static int verbose=0;
+static int verbose=1;
 
 static byte current_palette[768];
 
@@ -113,6 +115,7 @@ void (*vid_menukeyfn)(int key);
 void VID_MenuKey (int key);
 
 static PIXEL st2d_8to16table[256];
+static PIXEL32 st2d_8to32table[256];
 static int shiftmask_fl=0;
 static long r_shift,g_shift,b_shift;
 static unsigned long r_mask,g_mask,b_mask;
@@ -129,9 +132,9 @@ void shiftmask_init()
     shiftmask_fl=1;
 }
 
-PIXEL xlib_rgb(int r,int g,int b)
+PIXEL32 xlib_rgb(int r,int g,int b)
 {
-    PIXEL p;
+    PIXEL32 p;
     if(shiftmask_fl==0) shiftmask_init();
     p=0;
 
@@ -160,15 +163,15 @@ void st2_fixup( XImage *framebuf, int x, int y, int width, int height)
 {
 	int xi,yi;
 	unsigned char *src;
-	PIXEL *dest;
+	PIXEL32 *dest;
 
 	if( (x<0)||(y<0) )return;
 
 	for (yi = y; yi < (y+height); yi++) {
 		src = &framebuf->data [yi * framebuf->bytes_per_line];
-		dest = (PIXEL*)src;
+		dest = (PIXEL32*)src;
 		for(xi = (x+width-1); xi >= x; xi--) {
-			dest[xi] = st2d_8to16table[src[xi]];
+			dest[xi] = st2d_8to32table[src[xi]];
 		}
 	}
 }
@@ -482,6 +485,7 @@ void	VID_Init (unsigned char *palette)
 		printf("	blue_mask 0x%x\n", (int)(x_visinfo->blue_mask));
 		printf("	colormap_size %d\n", x_visinfo->colormap_size);
 		printf("	bits_per_rgb %d\n", x_visinfo->bits_per_rgb);
+		printf("	c_class %d\n", x_visinfo->class);
 	}
 
 	x_vis = x_visinfo->visual;
@@ -518,6 +522,11 @@ void	VID_Init (unsigned char *palette)
 		if (x_visinfo->class != TrueColor)
 			XFreeColormap(x_disp, tmpcmap);
 
+	}
+
+	if (verbose)
+	{
+	  printf("x_visinfo->depth: %d\n", (int)(x_visinfo->depth));
 	}
 
 	if (x_visinfo->depth == 8)
@@ -610,9 +619,12 @@ void VID_SetPalette(unsigned char *palette)
 	int i;
 	XColor colors[256];
 
-	for(i=0;i<256;i++)
-		st2d_8to16table[i]= xlib_rgb(palette[i*3],
-			palette[i*3+1],palette[i*3+2]);
+	for(i=0;i<256;i++) {
+	  //		st2d_8to16table[i]= xlib_rgb(palette[i*3],
+	  //		palette[i*3+1],palette[i*3+2]);
+		st2d_8to32table[i]= xlib_rgb(palette[i*3],
+			palette[i*3+1],palette[i*3+2]);		
+	}
 
 	if (x_visinfo->class == PseudoColor && x_visinfo->depth == 8)
 	{

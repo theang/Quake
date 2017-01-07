@@ -104,7 +104,7 @@ void Sys_Printf (char *fmt, ...)
 void Sys_Printf (char *fmt, ...)
 {
 	va_list		argptr;
-	char		text[2048];
+	char		text[16384];
 	unsigned char		*p;
 
 	va_start (argptr,fmt);
@@ -112,7 +112,7 @@ void Sys_Printf (char *fmt, ...)
 	va_end (argptr);
 
 	if (strlen(text) > sizeof(text))
-		Sys_Error("memory overwrite in Sys_Printf");
+		Sys_Error("memory overwrite in Sys_Printf %d of %d", strlen(text), sizeof(text));
 
     if (nostdout)
         return;
