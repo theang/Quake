@@ -30,7 +30,7 @@ ARCH=x86_64
 RPMARCH=x86_64
 #endif
 
-MAINDIR=~/quake/Quake/QW
+MAINDIR ?= ./
 
 BUILD_DEBUG_DIR=debug$(ARCH)$(GLIBC)
 BUILD_RELEASE_DIR=release$(ARCH)$(GLIBC)
@@ -924,10 +924,10 @@ qwsv.spec : $(MAINDIR)/qwsv.spec.sh $(BUILD_RELEASE_DIR)/qwsv
 clean: clean-debug clean-release
 
 clean-debug:
-	$(MAKE) clean2 BUILDDIR=$(BUILD_DEBUG_DIR) CFLAGS="$(DEBUG_CFLAGS)"
+	$(MAKE) clean2 MAINDIR=../ BUILDDIR=$(BUILD_DEBUG_DIR) CFLAGS="$(DEBUG_CFLAGS)"
 
 clean-release:
-	$(MAKE) clean2 BUILDDIR=$(BUILD_RELEASE_DIR) CFLAGS="$(DEBUG_CFLAGS)"
+	$(MAKE) clean2 MAINDIR=../ BUILDDIR=$(BUILD_RELEASE_DIR) CFLAGS="$(DEBUG_CFLAGS)"
 
 clean2:
 	-rm -f $(QWSV_OBJS) \
@@ -936,5 +936,7 @@ clean2:
 		$(QWCL_SVGA_OBJS) \
 		$(QWCL_X11_OBJS) \
 		$(GLQWCL_OBJS) \
+		$(GLQWCL_X11_OBJS) \
+		$(TARGETS)
 
 
